@@ -25,7 +25,11 @@ function convert (source, options) {
     var syncRequires = [];
     var requiresWithSideEffects = [];
     var mainCallExpression = null;
-    var inlineRequireExpression = null;
+    var inlineRequireExpressions = [];
+    var inlineRequireExpressionsData = {
+        // require('requestManager', function (requestManager) {
+        // { requestManager: 'requestManager' }
+    };
 
     var result = falafel(source, {
         parser: acorn,
@@ -45,12 +49,13 @@ function convert (source, options) {
         }
 
         if (isModuleDefinition(node)) {
-            if (!mainCallExpression) {
+
+            if (!mainCallExpression && isDefine(node)) {
                 //throw new Error('Found multiple module definitions in one file.');
 
                 mainCallExpression = node;
             } else {
-                inlineRequireExpression = node;
+                inlineRequireExpressions.push(node);
             }
         }
 
@@ -76,10 +81,6 @@ function convert (source, options) {
         return source;
     }
 
-    if (inlineRequireExpression) {
-        return convertInlineRequire(inlineRequireExpression, source);
-    }
-
     var moduleDeps = mainCallExpression.arguments.length > 1 ? mainCallExpression.arguments[0] : null;
     var moduleFunc = mainCallExpression.arguments[mainCallExpression.arguments.length > 1 ? 1 : 0];
     var hasDeps = moduleDeps && moduleDeps.elements.length > 0;
@@ -99,6 +100,22 @@ function convert (source, options) {
             return obj;
         }, {}));
     }
+
+
+
+    inlineRequireExpressions.forEach(function (expression) {
+        expression.arguments.forEach(function (expressionArgument) {
+            if (expressionArgument.type === 'Literal') {
+                importNames.push(expressionArgument.value)
+            } else if (expressionArgument.type === 'ArrayExpression') {
+                expressionArgument.elements.map(function (element) {
+                    importNames.push(element.value)
+                })
+            }
+        })
+    });
+
+    // console.log(importNames);
 
     syncRequires.forEach(function (node) {
         var moduleName = node.arguments[0].raw;
@@ -148,12 +165,6 @@ function convert (source, options) {
     mainCallExpression.parent.update(moduleCode);
 
     return result.toString();
-}
-
-function convertInlineRequire(node, source) {
-    console.log('################################################### convertInlineRequire');
-
-    return source;
 }
 
 /**
