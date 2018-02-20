@@ -25,6 +25,7 @@ function convert (source, options) {
     var syncRequires = [];
     var requiresWithSideEffects = [];
     var mainCallExpression = null;
+    var inlineRequireExpression = null;
 
     var result = falafel(source, {
         parser: acorn,
@@ -44,11 +45,13 @@ function convert (source, options) {
         }
 
         if (isModuleDefinition(node)) {
-            if (mainCallExpression) {
-                throw new Error('Found multiple module definitions in one file.');
-            }
+            if (!mainCallExpression) {
+                //throw new Error('Found multiple module definitions in one file.');
 
-            mainCallExpression = node;
+                mainCallExpression = node;
+            } else {
+                inlineRequireExpression = node;
+            }
         }
 
         else if (isSyncRequire(node)) {
@@ -71,6 +74,10 @@ function convert (source, options) {
     // no module definition found - return source untouched
     if (!mainCallExpression) {
         return source;
+    }
+
+    if (inlineRequireExpression) {
+        return convertInlineRequire(inlineRequireExpression, source);
     }
 
     var moduleDeps = mainCallExpression.arguments.length > 1 ? mainCallExpression.arguments[0] : null;
@@ -143,8 +150,14 @@ function convert (source, options) {
     return result.toString();
 }
 
+function convertInlineRequire(node, source) {
+    console.log('################################################### convertInlineRequire');
+
+    return source;
+}
+
 /**
- * Takes an object where the keys are module paths and the values are
+ * Takes an object where  the keys are module paths and the values are
  * the import names and returns the import statements as a string.
  * @param {object} dependencies
  * @returns {string}
@@ -309,6 +322,11 @@ function isModuleDefinition (node) {
 
     // eg. require(['a', 'b'])
     if (arrayEquals(argTypes, ['ArrayExpression'])) {
+        return true;
+    }
+
+    // eg. require(['a', 'b'])
+    if (arrayEquals(argTypes, ['Literal', 'FunctionExpression'])) {
         return true;
     }
 
