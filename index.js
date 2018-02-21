@@ -85,6 +85,51 @@ function convert (source, options) {
     var moduleFunc = mainCallExpression.arguments[mainCallExpression.arguments.length > 1 ? 1 : 0];
     var hasDeps = moduleDeps && moduleDeps.elements.length > 0;
 
+
+    //////////////////////////////////
+    var data = {};
+
+    inlineRequireExpressions.forEach(function (expression) {
+        var dataKey
+        var dataValue;
+        var callbackBody;
+        var expressionBody;
+
+        expression.arguments.forEach(function (expressionArgument) {
+            //console.log('################################################### ', expressionArgument.type);
+
+            if (expressionArgument.type === 'Literal') {
+                dataKey = expressionArgument.value;
+            } else if (expressionArgument.type === 'ArrayExpression') {
+                dataKey = expressionArgument.elements[0].value;
+                //expressionArgument.elements.map(function (element) {
+                //    // todo suuport for several arguments in inline require
+                //});
+            } else if (expressionArgument.type === 'FunctionExpression') {
+                //console.log('################################################### function expression');
+                //console.log(expressionArgument.params[0].name);
+                dataValue = expressionArgument.params[0].name;
+                //console.log('################################################### source');
+                //console.log(expressionArgument.body.source()[expressionArgument.body.source().length - 1]);
+                expressionBody = expressionArgument.body.source();
+                callbackBody = expressionBody.slice(1, expressionBody.length - 1)
+            } else if (expressionArgument.type === 'ArrowFunctionExpression') {
+                dataValue = expressionArgument.params[0].name;
+
+                expressionBody = expressionArgument.body.source();
+                callbackBody = expressionBody.slice(1, expressionBody.length - 1)
+            }
+        });
+
+        expression.update(callbackBody.trim());
+
+        data["\'" + dataKey+ "\'"] = dataValue ;
+    });
+
+    inlineRequireExpressionsData = Object.assign(inlineRequireExpressionsData, data);
+    //////////////////////////////////
+
+
     if (hasDeps) {
 
         var modulePaths = moduleDeps.elements.map(function (node) {
@@ -99,23 +144,15 @@ function convert (source, options) {
             obj[path] = importNames[index] || null;
             return obj;
         }, {}));
+
+        extend(dependenciesMap, inlineRequireExpressionsData);
+
+        //console.log('################################################### inlineRequireExpressionsData');
+        //console.log(inlineRequireExpressionsData);
+        //console.log('################################################### ');
+        //console.log(dependenciesMap);
+        //console.log('################################################### ');
     }
-
-
-
-    inlineRequireExpressions.forEach(function (expression) {
-        expression.arguments.forEach(function (expressionArgument) {
-            if (expressionArgument.type === 'Literal') {
-                importNames.push(expressionArgument.value)
-            } else if (expressionArgument.type === 'ArrayExpression') {
-                expressionArgument.elements.map(function (element) {
-                    importNames.push(element.value)
-                })
-            }
-        })
-    });
-
-    // console.log(importNames);
 
     syncRequires.forEach(function (node) {
         var moduleName = node.arguments[0].raw;
@@ -124,6 +161,9 @@ function convert (source, options) {
         if (!dependenciesMap[moduleName]) {
             dependenciesMap[moduleName] = makeImportName(node.arguments[0].value);
         }
+
+        //console.log('dependenciesMap');
+        //console.log(dependenciesMap);
 
         // replace with the import name
         node.update(dependenciesMap[moduleName]);
