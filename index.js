@@ -133,7 +133,14 @@ function convert (source, options) {
     if (hasDeps) {
 
         var modulePaths = moduleDeps.elements.map(function (node) {
-            return node.raw;
+            var path = node.raw;
+
+            if (node.raw.indexOf('hbs!')) {
+                path = path.slice(5, path.length - 1);
+                path = "'" + path + ".hbs'";
+            }
+
+            return path;
         });
 
         var importNames = moduleFunc.params.map(function (param) {
