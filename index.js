@@ -135,7 +135,7 @@ function convert (source, options) {
         var modulePaths = moduleDeps.elements.map(function (node) {
             var path = node.raw;
 
-            if (node.raw.indexOf('hbs!')) {
+            if (node.raw.indexOf('hbs!') > -1) {
                 path = path.slice(5, path.length - 1);
                 path = "'" + path + ".hbs'";
             }
