@@ -244,6 +244,11 @@ function getImportStatements (dependencies) {
 function updateReturnStatement (functionExpression) {
     if (functionExpression.body.type === 'ObjectExpression') {
         functionExpression.body.update('{\n\nexport default ' + functionExpression.body.source() + '}')
+    } else if (functionExpression.body.type === 'CallExpression') {
+        // () => PageView.extend({
+        if (functionExpression.body.callee.object.name === 'PageView') {
+            functionExpression.body.update('{\n\nexport default ' + functionExpression.body.source() + '}')
+        }
     } else {
         functionExpression.body.body.forEach(function (node) {
             if (node.type === 'ReturnStatement') {
