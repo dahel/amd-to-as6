@@ -53,7 +53,7 @@ function convert (source, options) {
                 //throw new Error('Found multiple module definitions in one file.');
 
                 mainCallExpression = node;
-            } else if (isRequire(node)) {
+            } else if (!mainCallExpression && isRequire(node) && !node.parent.parent.parent /* this is for inline require */) {
                 mainCallExpression = node;
             } else {
                 inlineRequireExpressions.push(node);
