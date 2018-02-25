@@ -49,10 +49,11 @@ function convert (source, options) {
         }
 
         if (isModuleDefinition(node)) {
-
             if (!mainCallExpression && isDefine(node)) {
                 //throw new Error('Found multiple module definitions in one file.');
 
+                mainCallExpression = node;
+            } else if (isRequire(node)) {
                 mainCallExpression = node;
             } else {
                 inlineRequireExpressions.push(node);
