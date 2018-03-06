@@ -1,0 +1,61 @@
+Node {
+  type: 'CallExpression',
+  start: 2619,
+  end: 2869,
+  callee:
+   Node {
+     type: 'MemberExpression',
+     start: 2619,
+     end: 2639,
+     object:
+      Node {
+        type: 'MemberExpression',
+        start: 2619,
+        end: 2632,
+        object: [Object],
+        property: [Object],
+        computed: false,
+        parent: [Circular],
+        source: [Function],
+        update: [Function: update] },
+     property:
+      Node {
+        type: 'Identifier',
+        start: 2633,
+        end: 2639,
+        name: 'extend',
+        parent: [Circular],
+        source: [Function],
+        update: [Function: update] },
+     computed: false,
+     parent: [Circular],
+     source: [Function],
+     update: [Function: update] },
+  arguments:
+   [ Node {
+       type: 'ObjectExpression',
+       start: 2640,
+       end: 2868,
+       properties: [Array],
+       parent: [Circular],
+       source: [Function],
+       update: [Function: update] } ],
+  parent:
+   Node {
+     type: 'ReturnStatement',
+     start: 2612,
+     end: 2870,
+     argument: [Circular],
+     parent:
+      Node {
+        type: 'BlockStatement',
+        start: 2582,
+        end: 2873,
+        body: [Array],
+        parent: [Object],
+        source: [Function],
+        update: [Function: update] },
+     source: [Function],
+     update: [Function: update] },
+  source: [Function],
+  update: [Function: update] }
