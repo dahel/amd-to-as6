@@ -49,7 +49,7 @@ function convert (source, options) {
         }
 
         if (node.type === 'FunctionExpression') {
-            console.log(node);
+            console.log('################################################### ??');
             //console.log(node.callee.name);
 
             if (!node.callee.name) {
