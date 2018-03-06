@@ -48,16 +48,6 @@ function convert (source, options) {
             throw new Error('Found a define using a variable as the callback - this is not supported.');
         }
 
-        if (node.type === 'FunctionExpression') {
-            console.log('################################################### ??');
-            //console.log(node.callee.name);
-
-            if (!node.callee.name) {
-                //console.log('ok');
-                //console.log(node);
-            }
-        }
-
         if (isModuleDefinition(node)) {
             if (!mainCallExpression && isDefine(node)) {
                 //throw new Error('Found multiple module definitions in one file.');
